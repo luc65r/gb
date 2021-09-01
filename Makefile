@@ -6,7 +6,7 @@ CFLAGS := -std=c99
 CFLAGS += -Og -march=native
 CFLAGS += -ggdb
 CFLAGS += -Wall -Wextra -Wconversion -Wpedantic
-CFLAGS += -MMD -MP
+CFLAGS += -MMD -MP # FIXME: non portable
 LDFLAGS :=
 
 SRC_DIR := src

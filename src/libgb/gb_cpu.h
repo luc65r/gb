@@ -1,13 +1,19 @@
-#ifndef CPU_H
-#define CPU_H
+#ifndef GB_CPU_H
+#define GB_CPU_H
 
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include "gb_mmu.h"
+
 typedef struct {
     /* Avoid union to not rely on endianness */
     uint8_t reg[12];
+    GbMmu *mmu;
 } GbCpu;
+
+GbCpu *gb_cpu_init(GbMmu *mmu);
+void gb_cpu_deinit(GbCpu *cpu);
 
 #define REG(name, size)                                             \
     uint##size##_t gb_cpu_get_reg_##name(GbCpu *cpu);               \
