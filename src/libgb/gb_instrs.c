@@ -77,17 +77,19 @@ INSTR(dec_phl) {
 #define LD(r1, r2)                                          \
     INSTR(ld_##r1##_##r2) {                                 \
         gb_cpu_set_reg_##r1(cpu, gb_cpu_get_reg_##r2(cpu)); \
-        /* TODO */                                          \
+        gb_cpu_set_reg_pc(cpu, gb_cpu_get_reg_pc(cpu) + 1); \
     }
 ALL_REGS8_CROSS(LD)
 #undef LD
 
-#define LD(r1, r2)                              \
-    INSTR(ld_p##r1##_##r2) {                    \
-        /* TODO */                              \
-    }                                           \
-    INSTR(ld_##r2##_p##r1) {                    \
-        /* TODO */                              \
+#define LD(r1, r2)                                                      \
+    INSTR(ld_p##r1##_##r2) {                                            \
+        gb_mmu_write8(cpu->mmu, gb_cpu_get_reg_##r1(cpu), gb_cpu_get_reg_##r2(cpu)); \
+        gb_cpu_set_reg_pc(cpu, gb_cpu_get_reg_pc(cpu) + 1);             \
+    }                                                                   \
+    INSTR(ld_##r2##_p##r1) {                                            \
+        gb_cpu_set_reg_##r2(cpu, gb_mmu_read8(cpu->mmu, gb_cpu_get_reg_##r1(cpu))); \
+        gb_cpu_set_reg_pc(cpu, gb_cpu_get_reg_pc(cpu) + 1);             \
     }
 LD(bc, a) LD(de, a)
 #define LDHL(r) LD(hl, r)
@@ -96,30 +98,46 @@ ALL_REGS8(LDHL)
 #undef LD
 
 INSTR(ld_phli_a) {
-    /* TODO */
+    uint16_t hl = gb_cpu_get_reg_hl(cpu);
+    gb_mmu_write8(cpu->mmu, hl, gb_cpu_get_reg_a(cpu));
+    gb_cpu_set_reg_hl(cpu, hl + 1);
+    gb_cpu_set_reg_pc(cpu, gb_cpu_get_reg_pc(cpu) + 1);
 }
 
 INSTR(ld_phld_a) {
-    /* TODO */
+    uint16_t hl = gb_cpu_get_reg_hl(cpu);
+    gb_mmu_write8(cpu->mmu, hl, gb_cpu_get_reg_a(cpu));
+    gb_cpu_set_reg_hl(cpu, hl - 1);
+    gb_cpu_set_reg_pc(cpu, gb_cpu_get_reg_pc(cpu) + 1);
 }
 
 INSTR(ld_a_phli) {
-    /* TODO */
+    uint16_t hl = gb_cpu_get_reg_hl(cpu);
+    gb_cpu_set_reg_a(cpu, gb_mmu_read8(cpu->mmu, hl));
+    gb_cpu_set_reg_hl(cpu, hl + 1);
+    gb_cpu_set_reg_pc(cpu, gb_cpu_get_reg_pc(cpu) + 1);
 }
 
 INSTR(ld_a_phld) {
-    /* TODO */
+    uint16_t hl = gb_cpu_get_reg_hl(cpu);
+    gb_cpu_set_reg_a(cpu, gb_mmu_read8(cpu->mmu, hl));
+    gb_cpu_set_reg_hl(cpu, hl - 1);
+    gb_cpu_set_reg_pc(cpu, gb_cpu_get_reg_pc(cpu) + 1);
 }
 
-#define LD(r)                                   \
-    INSTR(ld_##r##_u8) {                        \
-        /* TODO */                              \
+#define LD(r)                                                       \
+    INSTR(ld_##r##_u8) {                                            \
+        uint16_t pc = gb_cpu_get_reg_pc(cpu);                       \
+        gb_cpu_set_reg_##r(cpu, gb_mmu_read8(cpu->mmu, pc + 1));    \
+        gb_cpu_set_reg_pc(cpu, pc + 2);                             \
     }
 ALL_REGS8(LD)
 #undef LD
 
 INSTR(ld_phl_u8) {
-    /* TODO */
+    uint16_t pc = gb_cpu_get_reg_pc(cpu);
+    gb_mmu_write8(cpu->mmu, gb_cpu_get_reg_hl(cpu), gb_mmu_read8(cpu->mmu, pc + 1));
+    gb_cpu_set_reg_bc(cpu, pc + 2);
 }
     
 #define LD(r)                                   \
